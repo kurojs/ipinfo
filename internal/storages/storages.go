@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/kurojs/ipinfo/ent"
+	"github.com/kurojs/ipinfo/ent/history"
 	_ "github.com/lib/pq"
 )
 
@@ -46,7 +47,11 @@ func (s *DBStorage) CreateHistory(ctx context.Context, history *ent.History) (*e
 }
 
 func (s *DBStorage) GetHistories(ctx context.Context) (ent.Histories, error) {
-	return s.db.History.Query().Limit(100).All(ctx)
+	return s.db.History.
+		Query().
+		Order(ent.Desc(history.FieldLoginTime)).
+		Limit(100).
+		All(ctx)
 }
 
 func (s *DBStorage) Close() {
