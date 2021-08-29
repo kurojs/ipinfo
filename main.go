@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/kurojs/ipinfo/ent"
 	"github.com/kurojs/ipinfo/internal/services"
 	"github.com/kurojs/ipinfo/internal/storages"
@@ -15,6 +17,10 @@ func main() {
 	app := fiber.New(fiber.Config{
 		EnableTrustedProxyCheck: true,
 	})
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "https://agile-anchorage-23778.herokuapp.com",
+	}))
+
 	fmt.Println("Creating Geo Service...")
 	geoService, err := services.NewGeoService()
 	if err != nil {
@@ -37,7 +43,7 @@ func main() {
 		return c.SendString("✋ Hello there, IP Info is at your service")
 	})
 
-	app.Post("api/info", func(c *fiber.Ctx) error {
+	app.Get("api/info", func(c *fiber.Ctx) error {
 		geoInfo, err := geoService.GetIPInfo(c.IPs()[0])
 		if err != nil {
 			return c.SendStatus(http.StatusInternalServerError)
@@ -63,5 +69,5 @@ func main() {
 		return c.JSON(histories)
 	})
 
-	app.Listen(":3000")
+	app.Listen(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }
